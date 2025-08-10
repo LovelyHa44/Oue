@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Heart Animation - Ultra Glow Pink & Purple + Text</title>
+  <style>
+    body {
+      background: black;
+      margin: 0;
+      overflow: hidden;
+    }
+    canvas {
+      display: block;
+    }
+    /* Cute text style */
+    #loveText {
+      position: absolute;
+      top: 65%; /* Heart ke thoda niche */
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: 'Brush Script MT', cursive;
+      font-size: 3em;
+      color: #ffb6c1; /* soft pink */
+      font-weight: bold;
+      text-align: center;
+      pointer-events: none; /* click pass-through */
+      white-space: nowrap;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="c"></canvas>
+  <div id="loveText">I Love You Baby 💖😘</div>
+
+  <script>
+    var c = document.getElementById('c');
+    var a = c.getContext('2d');
+
+    let e = [];
+    let h = [];
+    let O = c.width = innerWidth;
+    let Q = c.height = innerHeight;
+
+    let v = 32;
+    let M = Math;
+    let R = M.random;
+    let C = M.cos;
+    let Y = 6.3;
+
+    // Heart path
+    for (let i = 0; i < Y; i += 0.2) {
+      h.push([
+        O / 2 + 180 * M.pow(M.sin(i), 3),
+        Q / 2 + 10 * (-(15 * C(i) - 5 * C(2 * i) - 2 * C(3 * i) - C(4 * i)))
+      ]);
+    }
+
+    // Trails with ultra strong pink-purple glow
+    for (let i = 0; i < v; i++) {
+      let x = R() * O;
+      let y = R() * Q;
+
+      // Hue from 260 (purple-blue) to 320 (pink-magenta)
+      let H = 260 + (i / v) * 60;
+      let S = R() * 15 + 85; // high saturation
+      let B = R() * 20 + 50; // much brighter
+
+      let f = [];
+      for (let k = 0; k < v; k++) {
+        f[k] = {
+          x: x,
+          y: y,
+          X: 0,
+          Y: 0,
+          R: (1 - k / v) + 1,
+          S: R() + 0.5,
+          q: ~~(R() * v),
+          D: i % 2 * 2 - 1,
+          F: R() * 0.15 + 0.6,
+          f: `hsla(${~~H},${~~S}%,${~~B}%,0.65)` // stronger alpha for glow
+        };
+      }
+      e.push(f);
+    }
+
+    function render(p) {
+      a.fillStyle = p.f;
+      a.beginPath();
+      a.arc(p.x, p.y, p.R, 0, Y, true);
+      a.closePath();
+      a.fill();
+    }
+
+    function loop() {
+      a.fillStyle = "rgba(0,0,0,0.15)"; // less fade, more glow
+      a.fillRect(0, 0, O, Q);
+
+      for (let i = 0; i < v; i++) {
+        let fTrail = e[i];
+        let u = fTrail[0];
+        let qNode = h[u.q];
+        let D = u.x - qNode[0];
+        let E = u.y - qNode[1];
+        let G = M.sqrt(D * D + E * E);
+
+        if (G < 10) {
+          if (R() > 0.95) {
+            u.q = ~~(R() * v);
+          } else {
+            if (R() > 0.99) u.D *= -1;
+            u.q += u.D;
+            u.q %= v;
+            if (u.q < 0) u.q += v;
+          }
+        }
+
+        u.X += (-D / G) * u.S;
+        u.Y += (-E / G) * u.S;
+        u.x += u.X;
+        u.y += u.Y;
+        render(u);
+        u.X *= u.F;
+        u.Y *= u.F;
+
+        for (let k = 0; k < v - 1; k++) {
+          let T = fTrail[k];
+          let N = fTrail[k + 1];
+          N.x -= (N.x - T.x) * 0.7;
+          N.y -= (N.y - T.y) * 0.7;
+          render(N);
+        }
+      }
+    }
+
+    (function animate() {
+      requestAnimationFrame(animate);
+      loop();
+    })();
+  </script>
+</body>
+</html>
